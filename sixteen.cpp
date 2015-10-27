@@ -2,7 +2,6 @@
 using namespace std;
 int board[5][5];
 int tmp[5][5];
-vector<int>rec;
 void rotate(int i,int t,int x[5][5]){
 		if(t==1) {
 				int tmp=x[i][1];
@@ -31,52 +30,44 @@ bool match(){
 					if(board[i][j]!=(i-1)*4+j) return false;
 		return true;
 }
+int rev[5]={0,2,1,4,3};
 int thresold;
+pair<int,int>ans[101];
+int now=0;
 bool ok;
-void go(int n){/*
-		puts("===============");
-		for(int i=1;i<=4;i++)
-			for(int j=1;j<=4;j++)
-					printf("%d%c",board[i][j],j==4?'\n':' ');
-		puts("===============");*/
-		if(match()) printf("match: %d\n",n),ok=true;
+void go(int n,int _i,int _j){
+		if(match()) {
+				printf("match: %d\n",n);
+				for(int i=0;i<now;i++) printf("%d %d\n",ans[i].first,ans[i].second);
+				ok=true;
+		}
+		if(ok) return;
 		if(n==thresold) return;
 		for(int i=1;i<=4;i++){
-				rotate(i,1,board);
-				go(n+1);
-				rotate(i,2,board);
-				rotate(i,2,board);
-				go(n+1);
-				rotate(i,1,board);
-				rotate(i,3,board);
-				go(n+1);
-				rotate(i,4,board);
-				rotate(i,4,board);
-				go(n+1);
-				rotate(i,3,board);
+				for(int j=1;j<=4;j++){
+						if(i==_i&&j==rev[_j]) continue;
+						rotate(i,j,board);
+						ans[now++]=make_pair(i,j);
+						go(n+1,i,j);
+						if(ok) return;
+						now--;
+						rotate(i,rev[j],board);
+				}
 		}
 }
 int main(){
 		for(int i=1;i<=4;i++)
 			for(int j=1;j<=4;j++)
-					board[i][j]=(i-1)*4+j;
-		board[1][1]=2;
-		board[1][2]=1;
-		for(int i=1;i<=4;i++)
-			for(int j=1;j<=4;j++)
-					printf("%d%c",board[i][j],j==4?'\n':' ');
+					scanf("%d",&board[i][j]);
 		ok=false;
 		thresold=1;
 		while(!ok){
-				go(0);
+				printf("try thresold:%d\n",thresold);
+				go(0,0,0);
 				if(ok){
 						printf("ID:%d\n",thresold);
 						break;
 				}
 				thresold++;
 		}
-		puts("QQ");
-		int size=rec.size();
-		for(int i=0;i<size;i++) printf("%d ",rec[i]);
-		puts("");
 }
