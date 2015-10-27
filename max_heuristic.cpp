@@ -1,15 +1,8 @@
-#include<cstdio>
+#include<bits/stdc++.h>
 using namespace std;
 int board[5][5];
-int root[5][5];
 int tmp[5][5];
-int min(int a,int b){return a>b?b:a;}
-int abs(int a){return a>0?a:-a;}
-int copy(int x[5][5],int y[5][5]){
-		for(int i=1;i<=4;i++)
-				for(int j=1;j<=4;j++)
-							x[i][j]=y[i][j];
-}
+const long long mod=1e18+7;
 void rotate(int i,int t,int x[5][5]){
 		if(t==1) {
 				int tmp=x[i][1];
@@ -32,69 +25,70 @@ void rotate(int i,int t,int x[5][5]){
 				x[1][i]=tmp;
 		}
 }
-bool match(int x[5][5]){
-		for(int i=1;i<=4;i++)
-			for(int j=1;j<=4;j++)
-					if(x[i][j]!=(i-1)*4+j) return false;
-		return true;
-}
 int heuristic(int x[5][5]){
 		int mx=-1;
-		for(int i=0;i<4;i++){
-				for(int j=0;j<4;j++){
+		for(int i=1;i<=4;i++){
+				for(int j=1;j<=4;j++){
 						int r=(x[i][j]-1)%4;
 						int k=(x[i][j]-1)/4;
-						k = min(abs(k-i),4-abs(k-i));
-						r = min(abs(r-j),4-abs(r-j));
+						k = min(abs(k-i+1),4-abs(k-i+1));
+						r = min(abs(r-j+1),4-abs(r-j+1));
 						if(mx<k+r) mx=k+r;
 				}
 		}
 		return mx;
 }
-bool ok;
-int step;
-int search(int x[5][5],int g,int bound){
-		/*puts("===============");
+bool match(){
 		for(int i=1;i<=4;i++)
-				for(int j=1;j<=4;j++)
-						printf("%d%c",x[i][j],j==4?'\n':' ');
-		puts("===============");*/
-		int f=g+heuristic(x);
-		if(f>bound) return f;
-		if(match(x)){
+			for(int j=1;j<=4;j++)
+					if(board[i][j]!=(i-1)*4+j) return false;
+		return true;
+}
+int rev[5]={0,2,1,4,3};
+int bound;
+pair<int,int>ans[101];
+int now=0;
+bool ok;
+int go(int bound,int g,int _i,int _j){
+		if(match()) {
+				printf("match bound: %d\n",bound);
+				for(int i=0;i<now;i++) printf("%d %d\n",ans[i].first,ans[i].second);
 				ok=true;
-				step=g;
-				return 0;
 		}
-		int min=2147483647;
+		if(ok) return bound;
+		int h=heuristic(board);
+		int f=g+h;
+		if(f>bound) return f;
+		int min=1e9+10;
 		for(int i=1;i<=4;i++){
 				for(int j=1;j<=4;j++){
-						copy(tmp,x);
-						rotate(i,j,tmp);
-						int t=search(tmp,g+1,bound);
-						if(min>t) min=t;
-						if(ok) return 0;
+						if(i==_i&&j==rev[_j]) continue;
+						rotate(i,j,board);
+						ans[now++]=make_pair(i,j);
+						int tmp=go(bound,g+1,i,j);
+						if(ok) return tmp;
+						if(tmp<min) min=tmp;
+						now--;
+						rotate(i,rev[j],board);
 				}
 		}
 		return min;
 }
-void ida_star(){
-		int bound = heuristic(root);
-		while(true){
-				int t=search(root,0,bound);
-				if(ok) break;
-				bound=t;
-		}
-}
 int main(){
 		for(int i=1;i<=4;i++)
-			for(int j=1;j<=4;j++)
-					scanf("%d",&board[i][j]);
-		/*for(int i=1;i<=4;i++)
-				for(int j=1;j<=4;j++)
-						printf("%d%c",board[i][j],j==4?'\n':' ');*/
-		copy(root,board);
+			for(int j=1;j<=4;j++) board[i][j]=4*(i-1)+j;
+					//scanf("%d",&board[i][j]);
+		board[4][3]=16;
+		board[4][4]=15;
 		ok=false;
-		ida_star();
-		printf("step = %d\n",step);
+		bound=heuristic(board);
+		while(!ok){
+				printf("try bound:%d\n",bound);
+				int b=go(bound,0,0,0);
+				if(ok){
+						printf("IDA bound:%d\n",b);
+						break;
+				}
+				bound=b;
+		}
 }

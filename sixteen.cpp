@@ -2,6 +2,7 @@
 using namespace std;
 int board[5][5];
 int tmp[5][5];
+const long long mod=1e18+7;
 void rotate(int i,int t,int x[5][5]){
 		if(t==1) {
 				int tmp=x[i][1];
